@@ -71,3 +71,28 @@ function startPage() {
     document.getElementById("average").innerText =
         myClass.getAverageGrade().toFixed(2);
 }
+
+// function for button - adds new student from input fields
+function addStudentFromInput() {
+
+    // get values from input fields
+    let name = (document.getElementById("nameInput") as HTMLInputElement).value;
+    let grade = Number((document.getElementById("gradeInput") as HTMLInputElement).value);
+
+    // create new student object
+    let newStudent = new Student(name, grade);
+
+    // add to class
+    myClass.addStudent(newStudent);
+
+    // update student list on page
+    document.getElementById("students")!.innerHTML = myClass.listStudents();
+
+    // update average grade
+    document.getElementById("average")!.innerText =
+        myClass.getAverageGrade().toFixed(2);
+
+    // clear input fields
+    (document.getElementById("nameInput") as HTMLInputElement).value = "";
+    (document.getElementById("gradeInput") as HTMLInputElement).value = "";
+}
