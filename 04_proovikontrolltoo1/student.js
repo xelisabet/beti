@@ -3,6 +3,8 @@ var Student = /** @class */ (function () {
         this.name = name;
         this.grade = grade;
     }
+
+    
     //method to get student's name
     Student.prototype.getName = function () {
         return this.name;

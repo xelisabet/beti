@@ -15,6 +15,7 @@ class Student {
     }
 }
 
+
 class SchoolClass {
     //array to hold students in the class
     private students: Student[] = [];
