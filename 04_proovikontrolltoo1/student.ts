@@ -97,3 +97,5 @@ function addStudentFromInput() {
     (document.getElementById("nameInput") as HTMLInputElement).value = "";
     (document.getElementById("gradeInput") as HTMLInputElement).value = "";
 }
+
+
