@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gravity Converter</title>
+
+<!-- compiled JavaScript file -->
+<script src="homework.js"></script>
+
+<script>
+
+let converters = [];
+
+function startPage(){
+
+    // create converter objects and store them in array
+    converters[0] = new EarthToMoon();
+    converters[1] = new MoonToEarth();
+
+    activateConverter();
+}
+
+function activateConverter(){
+
+    // get selected converter from dropdown
+    const select = document.getElementById("converterSelect");
+    const conv = converters[select.selectedIndex];
+
+    // show correct units on the page
+    document.getElementById("type1").innerText = conv.inputUnit();
+    document.getElementById("type2").innerText = conv.outputUnit();
+
+    // clear previous result
+    document.getElementById("answer").innerText = "";
+    document.getElementById("input1").value = "";
+}
+
+function buttonClick(){
+
+    // get input value and selected converter
+    const select = document.getElementById("converterSelect");
+    const input = document.getElementById("input1");
+    const answer = document.getElementById("answer");
+
+    const conv = converters[select.selectedIndex];
+
+    // calculate result
+    const value = input.valueAsNumber;
+    answer.innerText = conv.calculate(value).toFixed(2);
+}
+
+</script>
+</head>
+
+<body onload="startPage()">
+
+<!-- input number -->
+<input type="number" id="input1" onchange="buttonClick()">
+<span id="type1"></span>
+
+<!-- button to calculate -->
+<input type="button" value="=" onclick="buttonClick()">
+
+<!-- result -->
+<span id="answer"></span>
+<span id="type2"></span>
+
+<br><br>
+
+<!-- select conversion type -->
+<select id="converterSelect" onchange="activateConverter()">
+<option>Earth weight → Moon weight</option>
+<option>Moon weight → Earth weight</option>
+</select>
+
+</body>
+</html>
