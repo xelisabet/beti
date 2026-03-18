@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium</title>
+    <script src="aqua.js"></script>
+    <script>
+        let r1;
+        function startPage() {
+            let canvas=document.getElementById("canvas1");
+            let ctx=canvas.getContext("2d");
+            r1=new aqua(120, ctx, 20, 300, 150);  
+        }
+    </script>
+</head>
+<body onload="startPage()">
+    <!--aquarium controls-->
+    <div style="margin-top:12px;">
+        <label for="length">Length (cm):</label>
+        <input id="length" type="number" value="30" style="width:80px;">
+        <label for="width">Width (cm):</label>
+        <input id="width" type="number" value="20" style="width:80px;">
+        <label for="height">Height (cm):</label>
+        <input id="height" type="number" value="40" style="width:80px;">
+        <button id="createBtn">Create aquarium</button>
+    </div>
+
+    <!--water controls-->
+    <div style="margin-top:12px;">
+        <label for="litersInput">Liters:</label>
+        <input id="litersInput" type="number" step="0.1" value="1" style="width:80px;">
+        <button id="addBtn">Add water</button>
+        <button id="removeBtn">Remove water</button>
+    </div>
+
+    <div style="margin-top:8px;">
+        <span id="capacity">Capacity: — L</span> &nbsp;|&nbsp;
+        <span id="current">Current: — L</span>
+    </div>
+    <!-- status shows user-facing messages (overflow/empty) -->
+    <p id="status" style="color:darkred; font-weight:600;"></p>
+
+    <script>
+        
+        function updateStatus() {
+            if (!r1) return;
+            document.getElementById('capacity').textContent = `Capacity: ${r1.getVolumeLiters().toFixed(2)} L`;
+            document.getElementById('current').textContent = `Current: ${r1.getWaterLiters().toFixed(2)} L`;
+        }
+
+        document.getElementById('createBtn').addEventListener('click', function() {
+            const l = parseFloat(document.getElementById('length').value) || 0;
+            const w = parseFloat(document.getElementById('width').value) || 0;
+            const h = parseFloat(document.getElementById('height').value) || 0;
+            r1 = new aquarium(l, w, h); //logs capacity 
+            updateStatus();
+            document.getElementById('status').textContent = '';
+        });
+
+        document.getElementById('addBtn').addEventListener('click', function() {
+            if (!r1) { alert('Create an aquarium first'); return; }
+            const v = parseFloat(document.getElementById('litersInput').value) || 0;
+            const overflow = r1.addWaterLiters(v);
+            if (overflow > 0) {
+                document.getElementById('status').textContent = `Overflowed ${overflow.toFixed(2)} L`;
+                
+            } else {
+                document.getElementById('status').textContent = '';
+            }
+            console.log(`Added ${v} L — current: ${r1.getWaterLiters().toFixed(2)} L`);
+            updateStatus();
+        });
+
+        document.getElementById('removeBtn').addEventListener('click', function() {
+            if (!r1) { alert('Create an aquarium first'); return; }
+            const v = parseFloat(document.getElementById('litersInput').value) || 0;
+            const removed = r1.removeWaterLiters(v);
+            console.log(`Removed ${removed.toFixed(2)} L — current: ${r1.getWaterLiters().toFixed(2)} L`);
+            if (r1.getWaterLiters() === 0) {
+                document.getElementById('status').textContent = 'Aquarium empty.';
+            } else {
+                document.getElementById('status').textContent = '';
+            }
+            updateStatus();
+        });
+    </script>
+
+</body>
+</html>
