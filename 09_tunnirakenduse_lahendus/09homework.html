@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Flowerpot</title>
+
+    <script src="09homework.js" defer></script>
+    
+    <script>
+        let myPot = null;
+
+        function startPage(){
+            document.getElementById("output").innerText = "choose a plant and start!";
+        }
+
+        // create the object using input values
+        function setupPlant(){
+            const name = document.getElementById("plantName").value;
+            const moisture = document.getElementById("moisture").valueAsNumber;
+
+            // luuakse uus objekt
+            myPot = new flowerpot(name, moisture);
+            
+            document.getElementById("output").innerText = 
+                `${myPot.plantname} setup complete. current moisture: ${myPot.moisture}%`;
+        }
+
+        // adds water based on the input
+        function waterPlant(){
+            const amount = document.getElementById("waterAmount").valueAsNumber;
+            myPot.addwater(amount);
+            
+            document.getElementById("output").innerText = 
+                `after watering, ${myPot.plantname} moisture is: ${myPot.moisture.toFixed(1)}%`;
+        }
+
+        // calculates how much is needed to reach a target
+        function checkNeeds(){
+            const target = document.getElementById("targetLevel").valueAsNumber;
+            const needed = myPot.calculatewaterneeded(target);
+            
+            document.getElementById("output").innerText = 
+                `to reach ${target}%, you need to add ${needed}ml of water.`;
+        }
+    </script>
+</head>
+<body onload="startPage()">
+    <h1>smart flowerpot system</h1>
+    
+    <div>
+        <label>plant name: <input type="text" id="plantName" value="rose"></label><br><br>
+        <label>start moisture (%): <input type="number" id="moisture" value="20"></label><br><br>
+        <button onclick="setupPlant()">create plant object</button>
+    </div>
+
+    <hr>
+
+    <div>
+        <h3>actions</h3>
+        <label>water to add (ml): <input type="number" id="waterAmount"></label>
+        <button onclick="waterPlant()">add water now</button>
+    </div>
+
+    <br>
+
+    <div>
+        <label>target moisture (%): <input type="number" id="targetLevel"></label>
+        <button onclick="checkNeeds()">calculate water needed</button>
+    </div>
+
+    <h2 id="output" style="color: darkgreen;"></h2>
+
+</body>
+</html>
