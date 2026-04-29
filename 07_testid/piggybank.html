@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Piggy Bank</title>
+    <script>
+        // variable to hold our piggy bank object
+        let myBank = null;
+        
+        // prevent browser errors because the TS file uses 'export'
+        let exports = {}; 
+
+        // this function runs once when the page finishes loading
+        function startPage() {
+            // creating a new instance of our class
+            myBank = new PiggyBank();
+            // update to show the initial 0€
+            updateDisplay();
+        }
+
+        // triggered when 'add money' button is clicked
+        function addFunds() {
+            // .valueAsNumber ensures the input "10" becomes the math number 10
+            const amount = document.getElementById("moneyInput").valueAsNumber;
+            
+            // calling the method inside object to update the balance
+            myBank.addMoney(amount);
+            
+            // refreshing the screen and clearing the input field
+            updateDisplay();
+            document.getElementById("moneyInput").value = "";
+        }
+
+        // when the red 'smash' button is clicked
+        function resetBank() {
+            // calling the clear method from class
+            myBank.smashBank();
+            updateDisplay();
+        }
+
+        // help function to keep the html text in sync with the object data
+        function updateDisplay() {
+            // updating the big gold number
+            document.getElementById("balanceView").innerText = myBank.getBalance() + "€";
+            
+            // checking if we reached the goal (fixed at 100€ example)
+            document.getElementById("status").innerText = myBank.checkGoal(100);
+        }
+
+        // explicitly attaching functions to the 'window' object 
+        // so the 'onclick' events in html can find them
+        window.startPage = startPage;
+        window.addFunds = addFunds;
+        window.resetBank = resetBank;
+    </script>
+    
+    <script src="piggybank.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        #balanceView { font-size: 3em; color: gold; text-shadow: 1px 1px 2px black; }
+        .status-text { font-style: italic; color: gray; }
+    </style>
+</head>
+<body onload="startPage()">
+    <h1>Virtual piggy bank</h1>
+    
+    <div id="balanceView">0€</div>
+    
+    <p class="status-text" id="status"></p>
+
+    <input type="number" id="moneyInput" placeholder="amount to add">
+    <button onclick="addFunds()">add money</button>
+    
+    <br><br>
+    <button onclick="resetBank()" style="color: red;">smash and empty bank</button>
+</body>
+</html>
