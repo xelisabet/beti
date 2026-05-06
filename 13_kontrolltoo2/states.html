@@ -1,0 +1,81 @@
+<!-- States
+Create class Shop with opening and closing times
+Add method to check if shop is open at given timw
+Store schedule by weekday. Method takes weekday + time
+Also store internal current time and weekday. Allow advancing time by hour or day.
+Output: "Still closed", "Still open", "Closing", or "Opening". -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop states</title>
+    <script src="states.js"></script>
+
+    
+</head>
+<body>
+<body>
+
+    <div class="shop-card">
+        <div class="info">
+            <span id="day-name"></span><br>
+            Clock: <strong id="clock-display"></strong>:00
+        </div>
+
+        <div id="output">Loading...</div>
+
+        <button onclick="step(1)">+1 hour</button>
+        <button onclick="step(24)">+24 hours</button>
+
+        <div class="schedule">
+            <hr>
+            E-R: 09:00 - 18:00<br>
+            L: 10:00 - 15:00<br>
+            P: Closed
+        </div>
+    </div>
+
+    <script src="states.js"></script>
+    <script>
+        //Graafik
+        // 0 = P, 1 = E jne
+        //P:0, E:9-18, T:9-18, K:9-18, N:9-18, R:9-18, L:10-15
+        const opens =  [0, 9, 9, 9, 9, 9, 10];
+        const closes = [0, 18, 18, 18, 18, 18, 15];
+
+        //uus objekt
+        const myShop = new Shop(opens, closes);
+
+        //värskendab ekraanil olevat teksti myshop olekule
+        function updateUI() {
+            //uuendame päeva ja kellaaega
+            document.getElementById('day-name').innerText = myShop.getDayName();
+            document.getElementById('clock-display').innerText = myShop.currentTime;
+            
+            //küsime poelt staatuse teksti
+            const status = myShop.checkStatus();
+            const outputEl = document.getElementById('output');
+            outputEl.innerText = status;
+
+            // muudame värvi vastavalt staatusele
+            //Still open - roheline, Closing/Opening - kollane, Still closed - punane
+            if (status === "Still open") outputEl.style.color = "#2e7d32";
+            else if (status === "Opening" || status === "Closing") outputEl.style.color = "#f9a825";
+            else outputEl.style.color = "#d32f2f";
+        }
+
+        //käivita kui kasutaja vajutab nuppe et aeg edasi liikuda
+        function step(h) {
+            myShop.advanceTime(h);
+            updateUI();
+        }
+
+        // Käivita kohe alguses
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
+</body>
+</html>
