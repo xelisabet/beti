@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materjali soojenemise demo</title>
+    
+    <script src="temp.js"></script>
+    
+    <script>
+        // muutuja hoiab hetkel loodud objekti (vesi, raud või õhk)
+        let currentObject = null;
+
+        // Käivitatakse kohe, kui leht on laetud
+        function startPage() {
+            document.getElementById("output").innerText = "Vali materjal ja sisesta andmed.";
+            updateInputFields(); // Tekitab kohe alguses õiged sisendväljad
+        }
+
+        // muudab HTML-i sisu vastavalt valitud materjalile
+        function updateInputFields() {
+            const material = document.getElementById("materialSelect").value;
+            const container = document.getElementById("dynamicInputs");
+
+            // Kui valiti õhk, küsime ruumi mõõtmeid (m), sest AirAmount arvutab massi ise
+            if (material === "Air") {
+                container.innerHTML = `
+                    <label>Pikkus (m): <input type="number" id="length" value="3"></label><br>
+                    <label>Laius (m): <input type="number" id="width" value="4"></label><br>
+                    <label>Kõrgus (m): <input type="number" id="height" value="2.5"></label>
+                `;
+            } else {
+                // Vee ja raua puhul küsime otse massi kilogrammides
+                container.innerHTML = `
+                    <label>Mass (kg): <input type="number" id="mass" value="1"></label>
+                `;
+            }
+        }
+
+        // OBJEKTI LOOMINE: teeb valmis klassi isendi 
+        function createObject() {
+            const material = document.getElementById("materialSelect").value;
+            const temp = document.getElementById("initialTemp").valueAsNumber;
+            const capacity = document.getElementById("heatCapacity").valueAsNumber;
+
+            if (material === "Air") {
+                const l = document.getElementById("length").valueAsNumber;
+                const w = document.getElementById("width").valueAsNumber;
+                const h = document.getElementById("height").valueAsNumber;
+                // Kasutab AirAmount klassi (super() kaudu arvutatakse mass tihedusega 1.23)
+                currentObject = new AirAmount(l, w, h, temp);
+            } else {
+                const mass = document.getElementById("mass").valueAsNumber;
+                // Kasutab tavalist MaterialAmount klassi
+                currentObject = new MaterialAmount(mass, capacity, temp);
+            }
+
+            document.getElementById("output").innerText = "Objekt loodud! Hetke temperatuur: " + currentObject.getTemperature().toFixed(2) + "°C";
+        }
+
+        // 1: Soojendamine 1 kraadi võrra
+        function heatOneDegree() {
+            if (!currentObject) return alert("Loo esmalt objekt!");
+            
+            // Küsime klassilt: "Mitu džauli on vaja, et tõsta selle objekti temp 1 kraadi võrra?"
+            const energyNeeded = currentObject.getJoulesPerKelvin();
+            // Lisame selle energia objektile
+            currentObject.changeEnergy(energyNeeded);
+            
+            document.getElementById("output").innerText = "Soojendatud 1°C võrra. Uus temp: " + currentObject.getTemperature().toFixed(2) + "°C";
+        }
+
+        // 2: Aja arvutamine
+        function calculateHeatingTime() {
+            if (!currentObject) return alert("Loo esmalt objekt!");
+
+            const targetTemp = document.getElementById("targetTemp").valueAsNumber;
+            const power = document.getElementById("power").valueAsNumber; // Võimsus vattides (W = J/s)
+
+            const currentTemp = currentObject.getTemperature();
+            const tempDiff = targetTemp - currentTemp;
+
+            if (tempDiff <= 0) {
+                document.getElementById("output").innerText = "Sihttemperatuur on juba saavutatud.";
+                return;
+            }
+
+            // Valem: Aeg (s) = Vajalik energia (J) / Võimsus (W)
+            // Energia Q = m * c * deltaT
+            const energyNeeded = currentObject.getJoulesPerKelvin() * tempDiff;
+            const seconds = energyNeeded / power;
+
+            document.getElementById("output").innerText = "Aega kulub: " + seconds.toFixed(2) + " sekundit.";
+        }
+    </script>
+</head>
+<body onload="startPage()">
+
+    <h1>Materjali soojenemise simulatsioon</h1>
+
+    <fieldset>
+        <legend>1. Objekti andmed</legend>
+        <label>Materjal: 
+            <select id="materialSelect" onchange="updateInputFields()">
+                <option value="Water">Vesi</option>
+                <option value="Iron">Raud</option>
+                <option value="Air">Õhk (ruum)</option>
+            </select>
+        </label><br><br>
+
+        <div id="dynamicInputs">
+            </div><br>
+
+        <label>Algtemperatuur (°C): <input type="number" id="initialTemp" value="20"></label><br>
+        <label>Erisoojus (J/kg°C): <input type="number" id="heatCapacity" value="4200"></label><br><br>
+        
+        <button onclick="createObject()">Salvesta andmed ja loo objekt</button>
+    </fieldset>
+
+    <fieldset>
+        <legend>2. Simulatsioon ja arvutused</legend>
+        <button onclick="heatOneDegree()">Soojenda +1°C</button>
+        <br><br>
+        <label>Sihttemperatuur (°C): <input type="number" id="targetTemp" value="100"></label><br>
+        <label>Küttekeha võimsus (W): <input type="number" id="power" value="2000"></label><br>
+        <button onclick="calculateHeatingTime()">Arvuta kütmise aeg</button>
+    </fieldset>
+
+    <h2 id="output" style="color: darkcyan;"></h2>
+
+</body>
+</html>
