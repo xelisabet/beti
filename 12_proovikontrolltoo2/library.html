@@ -1,0 +1,188 @@
+<!-- Library System
+You are building a digital catalogue for a local library. The library holds different types of items — currently books and DVDs — and staff need to be able to manage them through a simple web application.
+What the system should do:
+    The system must be able to store and manage library items. Each item has basic information such as an ID, title, and year. Books and DVDs have their own additional details. The system should be able to display a readable summary of any item.
+    The library catalogue itself should allow staff to add new items and view everything currently stored.
+    Items need to be saved and restored between sessions — so the system should support exporting the catalogue to a file and loading it back. If a file contains invalid data, the system should handle it without crashing.
+    Finally, build a web page where staff can add items, browse the catalogue, load a saved file, and download the current catalogue.
+Extension
+    Once the core system works, improve it in one way of your choice. This could be anything that makes the system more useful or robust — for example, searching for items, adding a new item type, or preventing invalid input.
+Requirements:
+    Use classes
+    Write tests alongside your code as you build
+  -->
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library System</title>
+    <style>
+        /* Lihtne ja puhas stiil lehe loetavamaks muutmiseks */
+        body { font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 0 10px; }
+        .item-card { border: 1px solid #ccc; padding: 10px; margin: 5px 0; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; }
+    </style>
+    <script>
+        let library = null;
+
+        // Käivitub lehe laadimisel, loob tühja raamatukogu hoidla
+        function startPage(){
+            library = new Library();
+            showItems();
+        }
+
+        // DÜNAAMILINE VORMI UUENDUS: Näitab välju vastavalt sellele, kas valiti Book või DVD
+        function updateForm(){
+            const type = document.getElementById("type").value;
+            // Kasutame kolmikhindamist (ternary operator) stiili muutmiseks ("" on nähtav, "none" on peidetud)
+            document.getElementById("book-fields").style.display = type === "book" ? "" : "none";
+            document.getElementById("dvd-fields").style.display = type === "dvd" ? "" : "none";
+        }
+
+        // ESME LISAMINE: Kogub input-väljadelt andmed ja saadab need klassile
+        function addItem(){
+            const type = document.getElementById("type").value;
+            let item;
+            try {
+                const id = document.getElementById("id").value;
+                const title = document.getElementById("title").value;
+                const author = document.getElementById("author").value;
+                const year = Number(document.getElementById("year").value);
+
+                if (type === "book"){
+                    item = new Book(id, title, author, year, Number(document.getElementById("pages").value), document.getElementById("ISBN").value);
+                } else {
+                    item = new DVD(id, title, author, year, Number(document.getElementById("duration").value));
+                }
+                
+                library.addItem(item); // Lisab objekti Library nimekirja
+                showItems(); // Värskendab ekraanikuva
+                
+                // Tühjendame põhilised sisestusväljad, et oleks mugav järgmist lisada
+                document.getElementById("id").value = "";
+                document.getElementById("title").value = "";
+            } catch (e){
+                // Kui valideerimisel tekkis viga (nt tühi ID), kuvatakse see alert aknas
+                alert("Error adding item: " + e.message);
+            }
+        }
+
+        // KUVAMINE JA OTSING: Joonistab esemed ekraanile koos funktsionaalsusega
+        function showItems(){
+            const out = document.getElementById("output");
+            out.innerHTML = ""; // Teeme vana nimekirja puhtaks
+            
+            // Küsime otsingukasti väärtuse (kui kast on olemas)
+            const searchQuery = document.getElementById("searchBox") ? document.getElementById("searchBox").value : "";
+            // Küsime raamatukogult filtreeritud nimekirja
+            const items = library.search(searchQuery);
+
+            if (items.length === 0){ out.innerText = "(no items found)"; return; }
+
+            // Käime kõik leitud esemed läbi ja teeme neist HTML elemendid
+            items.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "item-card";
+                
+                // Eseme tekstiline kokkuvõte
+                const textSpan = document.createElement("span");
+                textSpan.textContent = item.getSummary();
+                div.appendChild(textSpan);
+
+                // LAENUTAMISE LAIENDUS: Teeme nupu oleku muutmiseks otse nimekirjas
+                const actionBtn = document.createElement("button");
+                actionBtn.textContent = item.isBorrowed ? "Return" : "Borrow";
+                actionBtn.onclick = () => {
+                    item.toggleBorrow(); // Muudab olekut objektis
+                    showItems(); // Joonistab nimekirja uute staatustega uuesti
+                };
+                div.appendChild(actionBtn);
+
+                out.appendChild(div);
+            });
+        }
+        
+        // FAILIST LAADIMINE: Loeb kasutaja arvutist .txt faili sisse
+        function loadFile(){
+            const file = document.getElementById("fileInput").files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Saadame faili sisuteksti raamatukogu klassile töötlemiseks
+                const errors = library.loadFromText(e.target.result);
+                // Kui failis oli vigaseid ridu, anname sellest teada, aga loetavad read laetakse ikka ära
+                if (errors.length > 0) {
+                    alert("Loaded with errors:\n" + errors.join("\n"));
+                }
+                showItems();
+            };
+            reader.readAsText(file);
+        }
+
+        // FAILINA ALLALAADIMINE: Teeb andmetest txt-faili ja pakub kasutajale salvestamiseks
+        function download(){
+            // Küsime raamatukogult salvestusvalmis teksti ja teeme sellest "Blob" objekti
+            const blob = new Blob([library.toText()], {type: "text/plain"});
+            const url = URL.createObjectURL(blob);
+            
+            // Teeme nähtamatu HTML-lingi, klikime sellele automaatselt ja kustutame ära
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "library_backup.txt";
+            a.click();
+        }
+        
+        // Seome funktsioonid globaalse window külge, et nupud neid üles leiaksid
+        window.startPage = startPage;
+        window.addItem = addItem;
+        window.showItems = showItems;
+        window.loadFile = loadFile;
+        window.download = download;
+        window.updateForm = updateForm;
+    </script>
+    <script src="Library.js"></script>
+</head>
+<body onload="startPage()">
+    <h1>Library Digital Catalogue</h1>
+    <hr>
+    
+    <h3>Upload Catalogue</h3>
+    <input type="file" id="fileInput">
+    <button onclick="loadFile()">Load file</button>
+    <hr>
+    
+    <h3>Add New Item</h3>
+    <label>Type:</label>
+    <select id="type" onchange="updateForm()">
+        <option value="book">Book</option>
+        <option value="dvd">DVD</option>
+    </select>
+    <br><br>
+    <input id="id" placeholder="ID (must be unique)">
+    <input id="title" placeholder="Title">
+    <input id="author" placeholder="Author / Director">
+    <input id="year" type="number" placeholder="Year">
+
+    <span id="book-fields">
+        <input id="pages" type="number" placeholder="Pages">
+        <input id="ISBN" placeholder="ISBN">
+    </span>
+    <span id="dvd-fields" style="display: none">
+        <input id="duration" type="number" placeholder="Duration (min)">
+    </span>
+    <br><br>
+    <button onclick="addItem()">Add to Catalogue</button>
+    <hr>
+
+    <h3>Catalogue Items</h3>
+    <input id="searchBox" placeholder="Search by title or author..." oninput="showItems()" style="width: 70%; padding: 5px;">
+    <button onclick="showItems()">Refresh</button>
+    <br><br>
+    <div id="output"></div>
+    <hr>
+
+    <h3>Backup</h3>
+    <button onclick="download()">Download Current Catalogue</button>
+</body>
+</html>
